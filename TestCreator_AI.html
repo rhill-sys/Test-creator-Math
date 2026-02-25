@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NJSLA Test Creator — AI-Powered</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script src="https://unpkg.com/docx@9.0.2/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f5f4f0;--surface:#fff;--text:#1a1a1a;--muted:#888;--accent:#2c5f8a;
+    --accent-dk:#1d4060;--accent-lt:#e8f0f7;--border:#ddd;--warm:#f0ebe3;
+    --success:#2d7a4f;--success-lt:#e8f5ed;--radius:10px;
+    --shadow:0 1px 3px rgba(0,0,0,0.06);--shadow-md:0 4px 12px rgba(0,0,0,0.06);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-icon{width:36px;height:36px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
+  .container{max-width:920px;margin:0 auto;padding:20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .card-head{padding:16px 20px;background:var(--warm);border-bottom:1px solid var(--border)}
+  .card-body{padding:20px}
+  .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px}
+  .grade-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+  .gbtn{padding:9px 18px;border:2px solid var(--border);border-radius:7px;background:var(--surface);cursor:pointer;font-weight:600;font-size:14px;color:#666;font-family:inherit;transition:all 0.15s}
+  .gbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .gbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .std-list{border:1px solid var(--border);border-radius:8px;max-height:350px;overflow-y:auto;margin-bottom:20px}
+  .std-list::-webkit-scrollbar{width:6px}.std-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  .std-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid #eee;cursor:pointer;transition:background 0.1s;font-size:13px}
+  .std-item:last-child{border-bottom:none}
+  .std-item:hover,.std-item.on{background:var(--accent-lt)}
+  .std-item input{margin-top:2px;accent-color:var(--accent);width:15px;height:15px;flex-shrink:0}
+  .std-code{font-weight:700;color:var(--accent);font-size:12px}
+  .std-desc{font-size:12px;color:var(--muted);line-height:1.4}
+  .sel-ctrl{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .sel-link{font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;border:none;background:none;font-family:inherit}
+  .sel-link:hover{text-decoration:underline}
+  .num-input{width:60px;padding:7px 10px;border:2px solid var(--border);border-radius:7px;font-size:15px;font-weight:600;text-align:center;font-family:inherit;outline:none}
+  .num-input:focus{border-color:var(--accent)}
+  .gen-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s}
+  .gen-btn:hover{background:var(--accent-dk)}.gen-btn:disabled{opacity:0.5;cursor:not-allowed}
+  .tbtn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:2px solid var(--border);border-radius:6px;background:var(--surface);color:#666;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:all 0.15s}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .tbtn.on{background:var(--success-lt);border-color:var(--success);color:var(--success)}
+  .tbtn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tbtn.primary:hover{background:var(--accent-dk)}
+  .toolbar{display:flex;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+  .stats{display:flex;gap:16px;padding:12px 16px;background:var(--warm);border-radius:8px 8px 0 0;border:1px solid var(--border);border-bottom:none;font-size:13px;align-items:center;flex-wrap:wrap}
+  .stats b{color:var(--accent)}
+  .test-doc{background:#fff;border:1px solid var(--border);border-radius:0 0 8px 8px;padding:40px 44px;box-shadow:var(--shadow-md)}
+  .test-title{text-align:center;padding-bottom:20px;margin-bottom:20px;border-bottom:2px solid #333}
+  .q-block{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #eee}
+  .q-block:last-child{border-bottom:none}
+  .choice-row{display:flex;align-items:flex-start;gap:10px;padding:5px 0;font-size:14px}
+  .choice-circle{width:22px;height:22px;border:2px solid #999;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#999;flex-shrink:0}
+  .resp-box{margin-top:8px;padding:10px;border:1px dashed #ccc;border-radius:6px;font-size:13px;color:var(--muted);min-height:50px}
+  .ak-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px}
+  .ak-table th{background:var(--accent);color:#fff;padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.5px}
+  .ak-table td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top}
+  .error-box{margin-top:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:13px;color:#b91c1c}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spinner{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn 0.3s ease forwards}
+  @media print{.header,.toolbar,.no-print{display:none!important}.test-doc{box-shadow:none;border:none;padding:0}.stats{display:none!important}body{background:#fff}}
+  @media(max-width:700px){.test-doc{padding:24px 16px}.container{padding:12px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useCallback } = React;
+
+// ============ STANDARDS DATA ============
+const STANDARDS = {"3":[{"code":"3.OA.3","desc":"Use multiplication and division within 100 to solve word problems"},{"code":"3.OA.4","desc":"Determine the unknown whole number in a multiplication or division equation"},{"code":"3.OA.7","desc":"Fluently multiply and divide within 100"},{"code":"3.OA.8","desc":"Solve two-step word problems using the four operations"},{"code":"3.OA.9","desc":"Identify arithmetic patterns and explain them using properties of operations"},{"code":"3.NBT.1","desc":"Use place value understanding to round whole numbers to the nearest 10 or 100"},{"code":"3.NBT.2","desc":"Fluently add and subtract within 1000"},{"code":"3.NBT.3","desc":"Multiply one-digit whole numbers by multiples of 10 in the range 10-90"},{"code":"3.NF.1","desc":"Understand a fraction 1/b as one part when a whole is partitioned into b equal parts"},{"code":"3.NF.2","desc":"Understand a fraction as a number on the number line"},{"code":"3.NF.3","desc":"Explain equivalence of fractions and compare fractions by reasoning about their size"},{"code":"3.NF.3d","desc":"Compare two fractions with the same numerator or denominator"},{"code":"3.MD.1","desc":"Tell and write time to the nearest minute and measure time intervals in minutes"},{"code":"3.MD.2","desc":"Measure and estimate liquid volumes and masses of objects using standard units"},{"code":"3.MD.3","desc":"Draw scaled picture/bar graphs and solve problems using information from graphs"},{"code":"3.MD.4","desc":"Generate measurement data by measuring lengths using rulers marked with halves and fourths of an inch"},{"code":"3.MD.5","desc":"Recognize area as an attribute of plane figures"},{"code":"3.MD.6","desc":"Measure areas by counting unit squares"},{"code":"3.MD.7a","desc":"Find the area of a rectangle with whole-number side lengths by tiling"},{"code":"3.MD.7b","desc":"Multiply side lengths to find areas of rectangles; relate to the distributive property"},{"code":"3.MD.7d","desc":"Recognize area as additive; find areas of rectilinear figures by decomposing"},{"code":"3.MD.8","desc":"Solve real-world problems involving perimeters of polygons"},{"code":"3.G.2","desc":"Partition shapes into parts with equal areas; express each part as a unit fraction"}],"4":[{"code":"4.OA.1","desc":"Interpret a multiplication equation as a comparison"},{"code":"4.OA.2","desc":"Multiply or divide to solve word problems involving multiplicative comparison"},{"code":"4.OA.3","desc":"Solve multi-step word problems with whole numbers using the four operations"},{"code":"4.NBT.1","desc":"Recognize that a digit in one place represents ten times what it represents in the place to its right"},{"code":"4.NBT.2","desc":"Read and write multi-digit whole numbers using numerals, number names, and expanded form"},{"code":"4.NBT.3","desc":"Use place value understanding to round multi-digit whole numbers to any place"},{"code":"4.NBT.5","desc":"Multiply a whole number of up to four digits by a one-digit whole number, and two two-digit numbers"},{"code":"4.NBT.6","desc":"Find whole-number quotients and remainders with up to four-digit dividends and one-digit divisors"},{"code":"4.NF.4a","desc":"Understand a/b as a multiple of 1/b"},{"code":"4.NF.4b","desc":"Multiply a fraction by a whole number"},{"code":"4.NF.4c","desc":"Solve word problems involving multiplication of a fraction by a whole number"},{"code":"4.NF.5","desc":"Express a fraction with denominator 10 as equivalent with denominator 100"},{"code":"4.NF.6","desc":"Use decimal notation for fractions with denominators 10 or 100"},{"code":"4.NF.7","desc":"Compare two decimals to hundredths"},{"code":"4.MD.2","desc":"Solve word problems involving distances, time, volumes, masses, and money"},{"code":"4.MD.3","desc":"Apply the area and perimeter formulas for rectangles"},{"code":"4.MD.5","desc":"Recognize angles as geometric shapes; understand angle measurement"},{"code":"4.MD.6","desc":"Measure angles in whole-number degrees using a protractor"},{"code":"4.MD.7","desc":"Recognize angle measure as additive; find unknown angles"},{"code":"4.G.1","desc":"Draw and identify points, lines, line segments, rays, angles, and parallel/perpendicular lines"},{"code":"4.G.2","desc":"Classify 2-D figures based on parallel/perpendicular lines and angle sizes"},{"code":"4.G.3","desc":"Recognize a line of symmetry for a two-dimensional figure"}],"5":[{"code":"5.NBT.A.2","desc":"Explain patterns when multiplying or dividing by powers of 10"},{"code":"5.NBT.A.3a","desc":"Read and write decimals to thousandths using base-ten numerals, number names, and expanded form"},{"code":"5.NBT.A.4","desc":"Use place value understanding to round decimals to any place"},{"code":"5.NBT.B.6","desc":"Find whole-number quotients with up to four-digit dividends and two-digit divisors"},{"code":"5.NBT.B.7","desc":"Add, subtract, multiply, and divide decimals to hundredths"},{"code":"5.NF.A.1","desc":"Add and subtract fractions with unlike denominators"},{"code":"5.NF.A.2","desc":"Solve word problems involving addition and subtraction of fractions with unlike denominators"},{"code":"5.NF.B.3","desc":"Interpret a fraction as division of the numerator by the denominator"},{"code":"5.NF.B.4b","desc":"Find the area of a rectangle with fractional side lengths"},{"code":"5.NF.B.6","desc":"Solve real-world problems involving multiplication of fractions and mixed numbers"},{"code":"5.NF.B.7c","desc":"Solve problems involving division of unit fractions by whole numbers and vice versa"},{"code":"5.OA.A.1","desc":"Use parentheses, brackets, or braces in numerical expressions and evaluate them"},{"code":"5.OA.A.2","desc":"Write simple expressions that record calculations with numbers"},{"code":"5.OA.B.3","desc":"Generate two numerical patterns using two given rules and identify relationships"},{"code":"5.G.A.1","desc":"Graph points on the coordinate plane to solve problems"},{"code":"5.G.B.3","desc":"Understand attributes of a category of 2-D figures belong to all subcategories"},{"code":"5.DL.B.5","desc":"Make a line plot with data in fractions of a unit; use fractions to solve problems"}],"6":[{"code":"6.RP.A.2","desc":"Understand the concept of a unit rate and use unit rate language"},{"code":"6.RP.A.3c","desc":"Find a percent of a quantity as a rate per 100"},{"code":"6.NS.C.6b","desc":"Understand signs of numbers in ordered pairs as indicating locations in quadrants"},{"code":"6.NS.C.7c","desc":"Understand the absolute value of a rational number as its distance from 0"},{"code":"6.EE.A.1","desc":"Write and evaluate numerical expressions involving whole-number exponents"},{"code":"6.EE.A.2c","desc":"Evaluate expressions at specific values of their variables"},{"code":"6.EE.A.3","desc":"Apply properties of operations to generate equivalent expressions"},{"code":"6.EE.B.6","desc":"Use variables to represent numbers and write expressions for real-world problems"},{"code":"6.EE.B.7","desc":"Solve problems by writing and solving equations of the form x+p=q and px=q"},{"code":"6.EE.B.8","desc":"Write an inequality to represent a constraint"},{"code":"6.EE.C.9","desc":"Use variables to represent two quantities that change in relationship to one another"},{"code":"6.G.A.2","desc":"Find the volume of a right rectangular prism with fractional edge lengths"},{"code":"6.G.A.4","desc":"Represent 3-D figures using nets and find surface area"},{"code":"6.SP.A.3","desc":"Recognize measures of center and variation"},{"code":"6.SP.B.5c","desc":"Summarize data with measures of center and variability"}],"7":[{"code":"7.RP.A.1","desc":"Compute unit rates associated with ratios of fractions"},{"code":"7.RP.A.2a","desc":"Decide whether two quantities are in a proportional relationship"},{"code":"7.RP.A.2b","desc":"Identify the constant of proportionality"},{"code":"7.RP.A.2c","desc":"Represent proportional relationships by equations"},{"code":"7.RP.A.3","desc":"Use proportional relationships to solve multistep ratio and percent problems"},{"code":"7.NS.A.1c","desc":"Understand subtraction of rational numbers as adding the additive inverse"},{"code":"7.NS.A.2c","desc":"Apply properties of operations to multiply and divide rational numbers"},{"code":"7.NS.A.3","desc":"Solve real-world problems involving four operations with rational numbers"},{"code":"7.EE.A.1","desc":"Apply properties of operations to add, subtract, factor, and expand linear expressions"},{"code":"7.EE.B.3","desc":"Solve multi-step problems with positive and negative rational numbers"},{"code":"7.EE.B.4a","desc":"Solve word problems leading to equations of the form px+q=r and p(x+q)=r"},{"code":"7.G.A.1","desc":"Solve problems involving scale drawings of geometric figures"},{"code":"7.G.B.4","desc":"Know formulas for area and circumference of a circle"},{"code":"7.G.B.5","desc":"Use angle facts to solve equations for unknown angles"},{"code":"7.SP.B.3","desc":"Assess visual overlap of two numerical data distributions"},{"code":"7.SP.B.4","desc":"Use measures of center and variability for comparative inferences"},{"code":"7.SP.C.5","desc":"Understand probability of a chance event is a number between 0 and 1"},{"code":"7.SP.C.6","desc":"Approximate probability by observing long-run relative frequency"},{"code":"7.SP.C.7a","desc":"Develop a uniform probability model by assigning equal probability to all outcomes"}]};
+
+// ============ AI SYSTEM PROMPT ============
+const SYSTEM_PROMPT = `You are an expert mathematics assessment developer for the New Jersey Student Learning Assessments (NJSLA). You create test items that precisely match the rigor, form, and style of the official NJSLA state practice tests.
+
+CRITICAL RULES:
+- Every item must be mathematically accurate with a definitively correct answer
+- Use real-world contexts with diverse, age-appropriate names, scenarios, and objects
+- Distractors must represent common student misconceptions (not random wrong answers)
+- Mix question types: mostly multiple choice (4 options A-D), some open response, occasionally select-all-that-apply (with 5 options A-E)
+- For each standard, vary the cognitive demand: include both straightforward computation and applied/reasoning items
+- Make sure numerical values are grade-appropriate
+- All math must be correct. Double-check every answer and explanation.
+
+Respond with ONLY valid JSON, no markdown backticks or other text. Use this exact structure:
+{
+  "sections": [
+    {
+      "code": "3.OA.3",
+      "desc": "Standard description",
+      "questions": [
+        {
+          "stem": "Question text here",
+          "type": "multiple_choice",
+          "choices": [{"letter":"A","text":"First option"},{"letter":"B","text":"Second option"},{"letter":"C","text":"Third option"},{"letter":"D","text":"Fourth option"}],
+          "answer": "B",
+          "explanation": "Brief explanation"
+        },
+        {
+          "stem": "Open response question",
+          "type": "open_response",
+          "choices": [],
+          "answer": "42",
+          "explanation": "Brief explanation"
+        }
+      ]
+    }
+  ]
+}
+
+For "type" use: "multiple_choice", "open_response", or "select_all"
+For select_all, use 5 choices (A-E) and answer lists all correct like "A, C, D"
+For open_response, choices should be []`;
+
+// ============ WORD DOCUMENT GENERATOR ============
+async function exportToWord(test, includeAnswerKey) {
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          AlignmentType, BorderStyle, WidthType, ShadingType } = docx;
+
+  const bdr = { style: BorderStyle.SINGLE, size: 1, color: "999999" };
+  const borders = { top: bdr, bottom: bdr, left: bdr, right: bdr };
+  const cm = { top: 60, bottom: 60, left: 100, right: 100 };
+  const children = [];
+
+  // Title block
+  children.push(
+    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 },
+      children: [new TextRun({ text: "New Jersey Student Learning Assessments\u2014Adaptive", italics: true, size: 22, font: "Arial" })] }),
+    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 },
+      children: [new TextRun({ text: "Item Bank", bold: true, size: 28, font: "Arial" })] }),
+    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 20 },
+      children: [new TextRun({ text: "Mathematics", size: 24, font: "Arial" })] }),
+    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "333333", space: 8 } },
+      children: [new TextRun({ text: "Grade " + test.grade, bold: true, size: 28, font: "Arial" })] }),
+    new Paragraph({ spacing: { after: 200 },
+      children: [new TextRun({ text: "Student Name ", bold: true, size: 24, font: "Arial" }), new TextRun({ text: "_".repeat(50), size: 24, font: "Arial" })] }),
+    new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Directions:", bold: true, size: 22, font: "Arial" })] }),
+    new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "Read each question carefully. If you do not know the answer to a question, you may go on to the next question. When you finish, you may review your answers.", size: 22, font: "Arial" })] }),
+    new Paragraph({ spacing: { after: 40 }, indent: { left: 360 }, children: [new TextRun({ text: "1. For questions with answer choices, fill in the circle next to your answer.", size: 22, font: "Arial" })] }),
+    new Paragraph({ spacing: { after: 300 }, indent: { left: 360 }, children: [new TextRun({ text: "2. For questions with response boxes, write your answer neatly, clearly, and in the space provided.", size: 22, font: "Arial" })] })
+  );
+
+  // Questions
+  const circles = { A: "\u24B6", B: "\u24B7", C: "\u24B8", D: "\u24B9", E: "\u24BA" };
+
+  for (const sec of test.sections) {
+    children.push(
+      new Paragraph({ spacing: { before: 300, after: 60 },
+        border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "2C5F8A", space: 4 } },
+        children: [new TextRun({ text: "Standard: " + sec.code, bold: true, size: 24, font: "Arial" })] }),
+      new Paragraph({ spacing: { after: 200 },
+        children: [new TextRun({ text: sec.desc, italics: true, size: 20, font: "Arial", color: "555555" })] })
+    );
+
+    for (let qi = 0; qi < sec.questions.length; qi++) {
+      const q = sec.questions[qi];
+      children.push(
+        new Paragraph({ spacing: { before: 160, after: 100 },
+          children: [new TextRun({ text: q.num + ".  ", bold: true, size: 24, font: "Arial" }), new TextRun({ text: q.stem, size: 24, font: "Arial" })] })
+      );
+
+      if (q.type === 'select_all') {
+        children.push(new Paragraph({ spacing: { after: 80 }, indent: { left: 360 },
+          children: [new TextRun({ text: "Select all that apply.", bold: true, italics: true, size: 22, font: "Arial" })] }));
+      }
+
+      if (q.choices && q.choices.length > 0) {
+        for (const c of q.choices) {
+          children.push(new Paragraph({ spacing: { after: 60 }, indent: { left: 720 },
+            children: [new TextRun({ text: (circles[c.letter] || c.letter) + "  " + c.text, size: 24, font: "Arial" })] }));
+        }
+      } else {
+        children.push(new Paragraph({ spacing: { after: 60 }, indent: { left: 360 },
+          children: [new TextRun({ text: "Answer: _______________________________", size: 24, font: "Arial" })] }));
+      }
+
+      if (qi < sec.questions.length - 1) {
+        children.push(new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 80, after: 160 },
+          children: [new TextRun({ text: "GO ON \u25B6", bold: true, size: 20, font: "Arial", color: "666666" })] }));
+      }
+    }
+
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 240 },
+      border: { top: { style: BorderStyle.SINGLE, size: 6, color: "333333", space: 6 } },
+      children: [new TextRun({ text: "STOP", bold: true, size: 28, font: "Arial" })] }));
+  }
+
+  // Answer Key
+  if (includeAnswerKey) {
+    children.push(new Paragraph({ spacing: { before: 400, after: 200 }, alignment: AlignmentType.CENTER,
+      border: { top: { style: BorderStyle.SINGLE, size: 6, color: "2C5F8A", space: 8 } },
+      children: [new TextRun({ text: "Answer Key", bold: true, size: 32, font: "Arial" })] }));
+
+    for (const sec of test.sections) {
+      children.push(new Paragraph({ spacing: { before: 200, after: 120 },
+        children: [new TextRun({ text: sec.code + " \u2014 " + sec.desc, bold: true, size: 22, font: "Arial", color: "2C5F8A" })] }));
+
+      const hdrCells = ["Item","Answer","Type","Explanation"].map((h, i) => {
+        const w = [900, 1400, 1600, 5460][i];
+        return new TableCell({ borders, width: { size: w, type: WidthType.DXA },
+          shading: { fill: "2C5F8A", type: ShadingType.CLEAR }, margins: cm,
+          children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, size: 20, font: "Arial", color: "FFFFFF" })] })] });
+      });
+
+      const rows = sec.questions.map((q, i) => {
+        const typeLabel = q.type === 'multiple_choice' ? 'MC' : q.type === 'select_all' ? 'Select All' : 'Open Response';
+        const shade = i % 2 === 0 ? "FFFFFF" : "F5F5F0";
+        return new TableRow({ children: [
+          new TableCell({ borders, width: { size: 900, type: WidthType.DXA }, shading: { fill: shade, type: ShadingType.CLEAR }, margins: cm,
+            children: [new Paragraph({ children: [new TextRun({ text: String(q.num), bold: true, size: 20, font: "Arial" })] })] }),
+          new TableCell({ borders, width: { size: 1400, type: WidthType.DXA }, shading: { fill: shade, type: ShadingType.CLEAR }, margins: cm,
+            children: [new Paragraph({ children: [new TextRun({ text: String(q.answer || "\u2014"), bold: true, size: 20, font: "Arial", color: "2D7A4F" })] })] }),
+          new TableCell({ borders, width: { size: 1600, type: WidthType.DXA }, shading: { fill: shade, type: ShadingType.CLEAR }, margins: cm,
+            children: [new Paragraph({ children: [new TextRun({ text: typeLabel, size: 18, font: "Arial", color: "666666" })] })] }),
+          new TableCell({ borders, width: { size: 5460, type: WidthType.DXA }, shading: { fill: shade, type: ShadingType.CLEAR }, margins: cm,
+            children: [new Paragraph({ children: [new TextRun({ text: q.explanation || "\u2014", size: 18, font: "Arial", color: "666666" })] })] }),
+        ]});
+      });
+
+      children.push(new Table({
+        width: { size: 9360, type: WidthType.DXA }, columnWidths: [900, 1400, 1600, 5460],
+        rows: [new TableRow({ tableHeader: true, children: hdrCells }), ...rows]
+      }));
+    }
+  }
+
+  const doc = new Document({
+    styles: { default: { document: { run: { font: "Arial", size: 24 } } } },
+    sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } }, children }]
+  });
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, "NJSLA_Grade" + test.grade + "_Assessment.docx");
+}
+
+// ============ MAIN APP ============
+function App() {
+  const [grade, setGrade] = useState(null);
+  const [selected, setSelected] = useState(new Set());
+  const [perStd, setPerStd] = useState(3);
+  const [test, setTest] = useState(null);
+  const [showKey, setShowKey] = useState(false);
+  const [view, setView] = useState("config");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
+  const stds = grade ? STANDARDS[grade] : [];
+  const toggle = (code) => { setSelected(p => { const n = new Set(p); n.has(code) ? n.delete(code) : n.add(code); return n; }); };
+  const totalItems = useMemo(() => stds.filter(s => selected.has(s.code)).length * perStd, [stds, selected, perStd]);
+
+  const generate = useCallback(async () => {
+    if (!grade || selected.size === 0) return;
+    setLoading(true); setError(null); setView("config");
+    const stdPrompt = stds.filter(s => selected.has(s.code)).map(s => `- ${s.code}: ${s.desc}`).join("\n");
+
+    try {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 4096, system: SYSTEM_PROMPT,
+          messages: [{ role: "user", content: `Generate a Grade ${grade} NJSLA Mathematics assessment.\n\nFor each standard below, create exactly ${perStd} NEW, ORIGINAL test items. Mix types (mostly MC, at least one open response per standard if ${perStd} >= 3).\n\nStandards:\n${stdPrompt}\n\nRespond with ONLY valid JSON.` }]
+        })
+      });
+      if (!resp.ok) throw new Error(`API error ${resp.status}`);
+      const data = await resp.json();
+      const text = data.content.map(i => i.text || "").join("").replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(text);
+      let n = 1;
+      for (const sec of parsed.sections) for (const q of sec.questions) q.num = n++;
+      setTest({ grade, sections: parsed.sections, ts: Date.now() });
+      setShowKey(false); setView("preview");
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
+  }, [grade, selected, perStd, stds]);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try { await exportToWord(test, showKey); }
+    catch(e) { alert("Export error: " + e.message); }
+    finally { setExporting(false); }
+  };
+
+  return (
+    <div>
+      <header className="header">
+        <div className="logo">
+          <div className="logo-icon">T</div>
+          <div>
+            <div style={{fontWeight:700,fontSize:17,display:"flex",alignItems:"center",gap:8}}>
+              Test Creator
+              <span style={{fontSize:10,background:"var(--success-lt)",color:"var(--success)",padding:"2px 8px",borderRadius:10,fontWeight:700,letterSpacing:0.5}}>AI-POWERED</span>
+            </div>
+            <div style={{fontSize:11,color:"var(--muted)",letterSpacing:0.8,textTransform:"uppercase"}}>NJSLA Mathematics • Grades 3–7</div>
+          </div>
+        </div>
+        {test && (
+          <div style={{display:"flex",gap:8}} className="no-print">
+            <button className={`tbtn ${view==="config"?"on":""}`} onClick={() => setView("config")}>⚙ Configure</button>
+            <button className={`tbtn ${view==="preview"?"on":""}`} onClick={() => setView("preview")}>📄 Preview</button>
+          </div>
+        )}
+      </header>
+
+      <div className="container">
+        {/* CONFIG */}
+        {view === "config" && (
+          <div className="card">
+            <div className="card-head">
+              <h2 style={{fontSize:18,fontWeight:700}}>✦ Build Your Test</h2>
+              <p style={{fontSize:13,color:"var(--muted)",marginTop:4}}>AI generates <b>brand-new, original items</b> every time — never the same test twice</p>
+            </div>
+            <div className="card-body">
+              <div className="label">Grade Level</div>
+              <div className="grade-btns">
+                {[3,4,5,6,7].map(g => (
+                  <button key={g} className={`gbtn ${grade===g?"on":""}`}
+                    onClick={() => {setGrade(g);setSelected(new Set());setTest(null);setView("config");}}>Grade {g}</button>
+                ))}
+              </div>
+
+              {grade && (<>
+                <div className="sel-ctrl">
+                  <div className="label" style={{marginBottom:0}}>Standards ({selected.size}/{stds.length})</div>
+                  <div style={{display:"flex",gap:8}}>
+                    <button className="sel-link" onClick={() => setSelected(new Set(stds.map(s=>s.code)))}>Select All</button>
+                    <span style={{color:"var(--border)"}}>|</span>
+                    <button className="sel-link" onClick={() => setSelected(new Set())}>Clear</button>
+                  </div>
+                </div>
+                <div className="std-list">
+                  {stds.map(s => (
+                    <div key={s.code} className={`std-item ${selected.has(s.code)?"on":""}`} onClick={() => toggle(s.code)}>
+                      <input type="checkbox" checked={selected.has(s.code)} onChange={()=>{}} />
+                      <div style={{flex:1}}><div className="std-code">{s.code}</div><div className="std-desc">{s.desc}</div></div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="label">Items per Standard</div>
+                <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+                  <input type="number" className="num-input" min={1} max={5} value={perStd}
+                    onChange={e => setPerStd(Math.max(1,Math.min(5,parseInt(e.target.value)||1)))} />
+                  <span style={{fontSize:13,color:"var(--muted)"}}>= {totalItems} total items</span>
+                </div>
+
+                <button className="gen-btn" disabled={selected.size===0||loading} onClick={generate}>
+                  {loading ? (<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+                    <span className="spinner"></span>Generating fresh items…
+                  </span>) : "✦  Generate New Test Items"}
+                </button>
+                {error && <div className="error-box">{error} — Please try again.</div>}
+              </>)}
+            </div>
+          </div>
+        )}
+
+        {/* PREVIEW */}
+        {view === "preview" && test && (
+          <div className="fade-in">
+            <div className="toolbar no-print">
+              <button className={`tbtn ${showKey?"on":""}`} onClick={() => setShowKey(!showKey)}>
+                🔑 {showKey ? "Hide" : "Show"} Answer Key
+              </button>
+              <div style={{display:"flex",gap:8}}>
+                <button className="tbtn" onClick={() => { setView("config"); setTimeout(generate, 100); }}>🔄 Regenerate</button>
+                <button className="tbtn" onClick={() => window.print()}>🖨 Print</button>
+                <button className="tbtn primary" onClick={handleExport} disabled={exporting}>
+                  {exporting ? "Exporting…" : "📥 Download Word"}
+                </button>
+              </div>
+            </div>
+
+            <div className="stats no-print">
+              <span>Grade <b>{test.grade}</b></span>
+              <span>Standards <b>{test.sections.length}</b></span>
+              <span>Items <b>{test.sections.reduce((s,sec) => s+sec.questions.length,0)}</b></span>
+              <span style={{marginLeft:"auto",fontSize:11,color:"var(--success)",fontWeight:600}}>✦ AI-Generated • Unique</span>
+            </div>
+
+            <div className="test-doc">
+              <div className="test-title">
+                <div style={{fontStyle:"italic",fontSize:13,color:"var(--muted)",marginBottom:4}}>New Jersey Student Learning Assessments — Adaptive</div>
+                <h1 style={{fontSize:21,fontWeight:700,margin:"0 0 2px"}}>Mathematics Assessment</h1>
+                <div style={{fontSize:15,fontWeight:600}}>Grade {test.grade}</div>
+              </div>
+
+              <div style={{fontSize:14,fontWeight:600,marginBottom:16}}>
+                Student Name <span style={{display:"inline-block",width:280,borderBottom:"1px solid #333",marginLeft:8}}>&nbsp;</span>
+              </div>
+
+              <div style={{background:"#f8f8f6",border:"1px solid var(--border)",borderRadius:6,padding:"14px 18px",marginBottom:28,fontSize:13,lineHeight:1.7,color:"var(--muted)"}}>
+                <b style={{color:"#333"}}>Directions:</b> Read each question carefully. If you do not know the answer, you may go on to the next question. When you finish, you may review your answers.<br/>
+                1. For questions with answer choices, fill in the circle next to your answer.<br/>
+                2. For questions with response boxes, write your answer neatly, clearly, and in the space provided.
+              </div>
+
+              {test.sections.map(sec => (
+                <div key={sec.code} style={{marginBottom:28}}>
+                  <div style={{background:"var(--accent)",color:"#fff",padding:"8px 14px",borderRadius:6,marginBottom:16,display:"flex",gap:10,alignItems:"center",fontSize:13}}>
+                    <b>{sec.code}</b><span style={{opacity:0.9}}>{sec.desc}</span>
+                  </div>
+                  {sec.questions.map((q,qi) => (
+                    <div key={qi} className="q-block">
+                      <div style={{fontWeight:700,fontSize:14,color:"var(--accent-dk)",marginBottom:4}}>{q.num}.</div>
+                      <div style={{fontSize:14,lineHeight:1.7,marginBottom:10}}>{q.stem}</div>
+                      {q.type==="select_all" && <div style={{fontSize:12,fontWeight:600,fontStyle:"italic",color:"var(--muted)",marginBottom:8}}>Select all that apply.</div>}
+                      {q.choices && q.choices.length > 0 ? (
+                        <div style={{paddingLeft:8}}>{q.choices.map((c,ci) => (
+                          <div key={ci} className="choice-row"><div className="choice-circle">{c.letter}</div><div>{c.text}</div></div>
+                        ))}</div>
+                      ) : (<div className="resp-box">Answer: _______________</div>)}
+                      {qi < sec.questions.length - 1 && <div style={{textAlign:"right",fontWeight:700,fontSize:12,color:"#aaa",marginTop:6}}>GO ON ▶</div>}
+                    </div>
+                  ))}
+                  <div style={{textAlign:"center",fontWeight:700,fontSize:15,borderTop:"2px solid #333",paddingTop:12,marginTop:8}}>STOP</div>
+                </div>
+              ))}
+
+              {showKey && (
+                <div style={{marginTop:40,paddingTop:28,borderTop:"3px solid var(--accent)"}}>
+                  <h2 style={{fontSize:19,fontWeight:700,textAlign:"center",marginBottom:20}}>Answer Key</h2>
+                  {test.sections.map(sec => (
+                    <table key={sec.code} className="ak-table">
+                      <thead><tr>
+                        {["#","Answer","Type","Standard","Explanation"].map((h,i) => <th key={i}>{h}</th>)}
+                      </tr></thead>
+                      <tbody>
+                        <tr><td colSpan={5} style={{background:"var(--warm)",fontWeight:700,color:"var(--accent)",padding:"6px 10px"}}>{sec.code} — {sec.desc}</td></tr>
+                        {sec.questions.map((q,qi) => (
+                          <tr key={qi} style={{background:qi%2===0?"#fff":"#fafaf8"}}>
+                            <td style={{fontWeight:700,width:40}}>{q.num}</td>
+                            <td style={{fontWeight:600,color:"var(--success)",width:80}}>{q.answer||"—"}</td>
+                            <td style={{fontSize:12,width:90}}>{q.type==="multiple_choice"?"MC":q.type==="select_all"?"Select All":"Open Response"}</td>
+                            <td style={{fontSize:12,color:"var(--accent)",width:80}}>{sec.code}</td>
+                            <td style={{fontSize:12,color:"var(--muted)"}}>{q.explanation||"—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
